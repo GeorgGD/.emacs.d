@@ -1,0 +1,81 @@
+#+STARTUP: hideblocks
+#+TITLE: Centaur Emacs Config
+#+PROPERTY: header-args :emacs-lisp :tangle  ~/.emacs.d/custom-post.el
+
+* Table of Contents
+:PROPERTIES: 
+:TOC:      :include all :ignore this
+:END:
+:CONTENTS:
+- [[#general-config][General Config]]
+- [[#key-bindings][Key bindings]]
+  - [[#global][Global]]
+- [[#user-interface][User interface]]
+  - [[#olivetti][Olivetti]]
+  - [[#corfu][Corfu]]
+  - [[#consult][Consult]]
+  - [[#posframe][Posframe]]
+- [[#org-mode][Org Mode]]
+- [[#development][Development]]
+  - [[#treemacs][Treemacs]]
+  - [[#java][Java]]
+:END: 
+* General Config
+#+begin_src emacs-lisp
+;;; package --- Summary
+;;; Commentary:
+  (server-start)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (setq inhibit-startup-screen nil)
+  (display-time-mode 1)
+  ;; Set the warning level
+  (setq warning-minimum-level :error)
+#+end_src
+
+* Key bindings
+** Global
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<H-up>") 'windmove-up)
+  (global-set-key (kbd "<H-down>") 'windmove-down)
+  (global-set-key (kbd "<H-left>") 'windmove-left)
+  (global-set-key (kbd "<H-right>") 'windmove-right)
+#+end_src
+
+* User interface
+** Olivetti
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook (lambda () (setq-default olivetti-body-width 0.52)))
+#+end_src
+
+** Corfu
+#+begin_src emacs-lisp
+  (setq corfu-cycle t)
+#+end_src
+It's a package for previewing all kinds of searches
+** Consult
+#+begin_src emacs-lisp
+  (setq-default consult-preview-key 'any)
+#+end_src
+** Posframe
+#+begin_src emacs-lisp
+  (vertico-posframe-mode t)
+#+end_src
+* Org Mode
+For updating the table of contents in an org-mode file I use org-make-toc.
+#+begin_src emacs-lisp
+  (use-package org-make-toc
+    :hook (org-mode . org-make-toc-mode))
+#+end_src
+
+* Development
+** Treemacs
+#+begin_src emacs-lisp
+  (add-hook 'treemacs-mode-hook (lambda () (setq treemacs-is-never-other-window t)))
+#+end_src
+** Java
+This will require the manual installation of the java language server (jdtls)
+#+begin_src emacs-lisp
+  (use-package eglot-java
+    :config
+    (add-hook 'java-mode-hook 'eglot-java-mode))
+#+end_src
