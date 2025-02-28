@@ -62,6 +62,11 @@ It's a package for previewing all kinds of searches
   (vertico-posframe-mode t)
 #+end_src
 * Org Mode
+Org-mode hooks
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook 'flyspell-mode)
+#+end_src
+
 For updating the table of contents in an org-mode file I use org-make-toc.
 #+begin_src emacs-lisp
   (use-package org-make-toc
