@@ -15,9 +15,11 @@
   - [[#corfu][Corfu]]
   - [[#consult][Consult]]
   - [[#posframe][Posframe]]
+  - [[#cursor-behaviour][Cursor behaviour]]
 - [[#org-mode][Org Mode]]
 - [[#development][Development]]
   - [[#treemacs][Treemacs]]
+  - [[#eglot][Eglot]]
   - [[#java][Java]]
   - [[#tree-sitter][Tree-Sitter]]
 :END: 
@@ -61,6 +63,11 @@ It's a package for previewing all kinds of searches
 #+begin_src emacs-lisp
   (vertico-posframe-mode t)
 #+end_src
+
+** Cursor behaviour
+#+begin_src emacs-lisp
+  (add-hook 'xref-after-return-hook 'recenter-top-bottom)
+#+end_src
 * Org Mode
 Org-mode hooks
 #+begin_src emacs-lisp
@@ -78,12 +85,27 @@ For updating the table of contents in an org-mode file I use org-make-toc.
 #+begin_src emacs-lisp
   (add-hook 'treemacs-mode-hook (lambda () (setq treemacs-is-never-other-window t)))
 #+end_src
+** Eglot
+#+begin_src emacs-lisp
+  (use-package eglot
+    :bind
+    ("M-RET" . 'eglot-code-actions)
+    ("H-d" . 'flymake-start))
+#+end_src
 ** Java
 This will require the manual installation of the java language server (jdtls)
 #+begin_src emacs-lisp
-  (use-package eglot-java
-    :config
-    (add-hook 'java-mode-hook 'eglot-java-mode))
+  (defun java-config()
+    (if (eq major-mode 'java-ts-mode)
+        (use-package eglot-java
+          :config
+          (add-hook 'java-ts-mode-hook 'eglot-java-mode))
+      (use-package lsp-java
+        :config
+        (add-hook 'java-ts-mode-hook #'lsp))
+      ))
+
+  (add-hook 'java-ts-mode-hook (lambda () (java-config)))
 #+end_src
 ** Tree-Sitter
 #+begin_src emacs-lisp
