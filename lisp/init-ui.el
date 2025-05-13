@@ -1,6 +1,6 @@
 ;; init-ui.el --- Better lookings and appearances.	-*- lexical-binding: t -*-
 
-;; Copyright (C) 2006-2024 Vincent Zhang
+;; Copyright (C) 2006-2025 Vincent Zhang
 
 ;; Author: Vincent Zhang <seagle0128@gmail.com>
 ;; URL: https://github.com/seagle0128/.emacs.d
@@ -50,8 +50,8 @@
 ;; Initial frame
 (setq initial-frame-alist '((top . 0.5)
                             (left . 0.5)
-                            (width . 0.628)
-                            (height . 0.8)
+                            (width . 0.7)
+                            (height . 0.85)
                             (fullscreen)))
 
 ;; Logo
@@ -265,7 +265,7 @@
 (use-package hide-mode-line
   :hook (((treemacs-mode
            eshell-mode shell-mode
-           term-mode vterm-mode
+           term-mode vterm-mode eat-mode
            embark-collect-mode
            lsp-ui-imenu-mode
            pdf-annot-list-mode) . turn-on-hide-mode-line-mode)
@@ -337,15 +337,13 @@
       auto-window-vscroll nil
       scroll-preserve-screen-position t)
 
-;; Good pixel line scrolling
-(if (fboundp 'pixel-scroll-precision-mode)
-    (pixel-scroll-precision-mode t)
-  (unless sys/macp
-    (use-package good-scroll
-      :diminish
-      :hook (after-init . good-scroll-mode)
-      :bind (([remap next] . good-scroll-up-full-screen)
-             ([remap prior] . good-scroll-down-full-screen)))))
+;; Smooth scrolling
+(when emacs/>=29p
+  (use-package ultra-scroll
+    :ensure nil
+    :init (unless (package-installed-p 'ultra-scroll)
+            (package-vc-install "https://github.com/jdtsmith/ultra-scroll"))
+    :hook (after-init . ultra-scroll-mode)))
 
 ;; Smooth scrolling over images
 (unless emacs/>=30p
@@ -364,31 +362,22 @@
   :config (dolist (mode '(dashboard-mode emacs-news-mode))
             (add-to-list 'page-break-lines-modes mode)))
 
-;; Child frame
-(when (childframe-workable-p)
-  (use-package posframe
-    :hook (after-load-theme . posframe-delete-all)
-    :init
-    (defface posframe-border
-      `((t (:inherit region)))
-      "Face used by the `posframe' border."
-      :group 'posframe)
-    (defvar posframe-border-width 2
-      "Default posframe border width.")
-    :config
-    (with-no-warnings
-      (defun my-posframe--prettify-frame (&rest _)
-        (set-face-background 'fringe nil posframe--frame))
-      (advice-add #'posframe--create-posframe :after #'my-posframe--prettify-frame)
+;; Transient
+(when (childframe-completion-workable-p)
+  ;; Display transient in child frame
+  (use-package transient-posframe
+    :diminish
+    :custom-face
+    (transient-posframe ((t (:inherit tooltip))))
+    (transient-posframe-border ((t (:inherit posframe-border :background unspecified))))
+    :hook (after-init . transient-posframe-mode)
+    :init (setq transient-mode-line-format nil
+                transient-posframe-border-width posframe-border-width
+                transient-posframe-poshandler 'posframe-poshandler-frame-center
+                transient-posframe-parameters '((left-fringe . 8)
+                                                (right-fringe . 8)))))
 
-      (defun posframe-poshandler-frame-center-near-bottom (info)
-        (cons (/ (- (plist-get info :parent-frame-width)
-                    (plist-get info :posframe-width))
-                 2)
-              (/ (+ (plist-get info :parent-frame-height)
-                    (* 2 (plist-get info :font-height)))
-                 2))))))
-
+;; For macOS
 (with-no-warnings
   (when sys/macp
     ;; Render thinner fonts
@@ -397,7 +386,7 @@
     (setq ns-pop-up-frames nil)))
 
 ;; Ligatures support
-(when (and emacs/>=28p (not centaur-prettify-symbols-alist))
+(unless centaur-prettify-symbols-alist
   (use-package composite
     :ensure nil
     :init (defvar composition-ligature-table (make-char-table nil))
