@@ -1,0 +1,51 @@
+#+TITLE: Important Key Bindings
+#+STARTUP: nofold
+
+* Important Key Bindings
+|------------+----------------------------------------------------+------------------------|
+| F9 or C-F9 | Spawn a vterm buffer                               | [[elisp:(+multi-vterm nil)][Run multi-vterm]]        |
+| M-.        | Find where method/function was defined             | xref-find-definitions  |
+| M-?        | For lisitng usages of a function                   | xref-find-references   |
+| M-g i      | Find the definition of a function in buffer        | consult-imenu          |
+| M-g I      | Search for function name in the entire project     | consult-multi-imenu    |
+| M-RET      | Execute code actions (for elisp and lsp-java mode) |                        |
+| C-c f      | List all errors (flymake mode)                     | flycheck-list-errors   |
+| F8         | Toggle treemacs                                    | treemacs               |
+| M-0        | Switch back to treemacs                            | treemacs-select-window |
+| H <up>     | Move to the window above                           | windmove-up            |
+| H <down>   | Move to the window below                           | windmove-down          |
+| H <left>   | Move to the left window                            | windmove-left          |
+| H <right>  | Move to the right window                           | windmove-right         |
+| C-.        | Spell checking in org mode                         |                        |
+|------------+----------------------------------------------------+------------------------|
+
+* Project commands
+|---------+------------------------------------------------------------------------------------+------------------------------|
+| C-x p f | Visit a file that belongs to the current project                                   | project-find-file            |
+| C-x p g | Find matches for a regexp in all files that belong to the current project          | project-find-regexp          |
+| C-x p r | Perform query-replace for a regexp in all files that belong to the current project | project-query-replace-regexp |
+|         |                                                                                    |                              |
+|---------+------------------------------------------------------------------------------------+------------------------------|
+
+* Magit
+|-------------+----------------------------------------------------------------+--------------|
+| C-x g       | Show git status info                                           | magit-status |
+|-------------+----------------------------------------------------------------+--------------|
+| ?           | Opens Magit's helper panel (Transient Panel)                   |              |
+| g           | Refreshes the buffer after a file change                       |              |
+| q           | Close the git status buffer                                    |              |
+| s           | Stages the selcted file                                        |              |
+| n           | For moving to the next visible section                         |              |
+| p           | Move to the previous visible section                           |              |
+| M - n       | Move to the next heading / sibling (sibling = type of heading) |              |
+| M - p       | Move to the previous header / sibling                          |              |
+| C - c C - c | While in the commit panel it will save the commit              |              |
+|             |                                                                |              |
+|-------------+----------------------------------------------------------------+--------------|
+
+* Navigating TODO's
+|---------+-------------------------+------------------|
+| C-c t n | Go to the next TODO     | hl-todo-next     |
+| C-c t p | Go to the previous TODO | hl-todo-previous |
+| C-c t i | Insert a TODO           | hl-todo-insert   |
+|---------+-------------------------+------------------|

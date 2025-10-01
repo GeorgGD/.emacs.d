@@ -1,0 +1,167 @@
+#+STARTUP: hideblocks
+#+TITLE: Centaur Emacs Config
+#+PROPERTY: header-args :emacs-lisp :tangle  ~/.emacs.d/custom-post.el
+
+* Table of Contents
+:PROPERTIES: 
+:TOC:      :include all :ignore this
+:END:
+:CONTENTS:
+- [[#general-config][General Config]]
+- [[#key-bindings][Key bindings]]
+  - [[#global][Global]]
+- [[#user-interface][User interface]]
+  - [[#olivetti][Olivetti]]
+  - [[#corfu][Corfu]]
+  - [[#consult][Consult]]
+  - [[#posframe][Posframe]]
+  - [[#cursor-behaviour][Cursor behaviour]]
+- [[#org-mode][Org Mode]]
+- [[#development][Development]]
+  - [[#treemacs][Treemacs]]
+  - [[#eglot][Eglot]]
+  - [[#java][Java]]
+  - [[#tree-sitter][Tree-Sitter]]
+:END: 
+* General Config
+#+begin_src emacs-lisp
+  ;;; package --- Summary
+  ;;; Commentary:
+  (server-start)
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  (setq inhibit-startup-screen nil)
+  (display-time-mode 1)
+  ;; Set the warning level
+  (setq warning-minimum-level :error)
+#+end_src
+
+* Key bindings
+** Global
+#+begin_src emacs-lisp
+  (global-set-key (kbd "<H-up>") 'windmove-up)
+  (global-set-key (kbd "<H-down>") 'windmove-down)
+  (global-set-key (kbd "<H-left>") 'windmove-left)
+  (global-set-key (kbd "<H-right>") 'windmove-right)
+#+end_src
+
+* User interface
+** Olivetti
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook (lambda () (setq-default olivetti-body-width 0.52)))
+#+end_src
+
+** Corfu
+#+begin_src emacs-lisp
+  (setq corfu-cycle t)
+#+end_src
+It's a package for previewing all kinds of searches
+** Consult
+#+begin_src emacs-lisp
+  (setq-default consult-preview-key 'any)
+#+end_src
+** Posframe
+#+begin_src emacs-lisp
+  (vertico-posframe-mode t)
+#+end_src
+
+** Cursor behaviour
+#+begin_src emacs-lisp
+  (add-hook 'xref-after-return-hook 'recenter-top-bottom)
+#+end_src
+* Org Mode
+Org-mode hooks
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook 'flyspell-mode)
+#+end_src
+
+For updating the table of contents in an org-mode file I use org-make-toc.
+#+begin_src emacs-lisp
+  (use-package org-make-toc
+    :hook (org-mode . org-make-toc-mode))
+#+end_src
+
+* Development
+** Treemacs
+#+begin_src emacs-lisp
+  (add-hook 'treemacs-mode-hook (lambda () (setq treemacs-is-never-other-window t)))
+#+end_src
+** Eglot
+#+begin_src emacs-lisp
+  (use-package eglot
+    :bind
+    ("M-RET" . 'eglot-code-actions)
+    ("H-d" . 'flymake-start))
+#+end_src
+** Java
+This will require the manual installation of the java language server (jdtls)
+#+begin_src emacs-lisp
+  (defun java-config()
+    (if (eq major-mode 'java-ts-mode)
+        (use-package eglot-java
+          :config
+          (add-hook 'java-ts-mode-hook 'eglot-java-mode))
+      (use-package lsp-java
+        :config
+        (add-hook 'java-ts-mode-hook #'lsp))
+      ))
+
+  (add-hook 'java-ts-mode-hook (lambda () (java-config)))
+#+end_src
+** Tree-Sitter
+#+begin_src emacs-lisp
+  (setq centaur-tree-sitter t)
+
+  (use-package treesit-auto
+    :mode (("\\.tsx\\'" . tsx-ts-mode)
+           ("\\.js\\'"  . typescript-ts-mode)
+           ("\\.ts\\'"  . typescript-ts-mode)
+           ("\\.jsx\\'" . tsx-ts-mode)
+           ("\\.json\\'" .  json-ts-mode)
+           ("\\.Dockerfile\\'" . dockerfile-ts-mode)
+           ;; More modes defined here...
+           )
+    :preface
+    (defun mp-setup-install-grammars ()
+      "Install Tree-sitter grammars if they are absent."
+      (interactive)
+      (dolist (grammar
+               '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.23.2"))
+                 (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.23.2"))
+                 (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.23.1" "src"))
+                 (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.24.8"))
+                 (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))
+                 (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
+                 (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
+                 (bash . ("https://github.com/tree-sitter/tree-sitter-bash" "v0.20.5"))
+                 (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+                 (amber . ("https://github.com/amber-lang/tree-sitter-amber"))
+                 (java . ("https://github.com/tree-sitter/tree-sitter-java" "v0.23.5"))))
+        (add-to-list 'treesit-language-source-alist grammar)
+        ;; Only install `grammar' if we don't already have it
+        ;; installed. However, if you want to *update* a grammar then
+        ;; this obviously prevents that from happening.
+        (unless (treesit-language-available-p (car grammar))
+          (treesit-install-language-grammar (car grammar)))))
+
+    ;; Optional, but recommended. Tree-sitter enabled major modes are
+    ;; distinct from their ordinary counterparts.
+    ;;
+    ;; You can remap major modes with `major-mode-remap-alist'. Note
+    ;; that this does *not* extend to hooks! Make sure you migrate them
+    ;; also
+    (dolist (mapping
+             '((python-mode . python-ts-mode)
+               (css-mode . css-ts-mode)
+               (typescript-mode . typescript-ts-mode)
+               (javascript-mode . typescript-ts-mode)
+               (js2-mode . js-ts-mode)
+               (bash-mode . bash-ts-mode)
+               (css-mode . css-ts-mode)
+               (json-mode . json-ts-mode)
+               (js-json-mode . json-ts-mode)
+               (sh-mode . bash-ts-mode)
+               (sh-base-mode . bash-ts-mode)))
+      (add-to-list 'major-mode-remap-alist mapping))
+    :config
+    (mp-setup-install-grammars)) ;; When installing the config for the first time, evaluate this to install all grammars
+#+end_src 
